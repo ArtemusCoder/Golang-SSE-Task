@@ -16,20 +16,20 @@ type Message struct {
 }
 
 func ListenHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	enc.Encode(lastMessage)
-	fmt.Fprintf(w, "data: %v\n\n", buf.String())
+	fmt.Fprintf(w, "data: %v\n", buf.String())
 	fmt.Fprintf(w, "retry: 1000\n")
 	fmt.Printf("data: %v\n", buf.String())
 
 	if f, ok := w.(http.Flusher); ok {
 		f.Flush()
 	}
-
 }
 
 func SayHandler(w http.ResponseWriter, r *http.Request) {
@@ -51,6 +51,7 @@ func SayHandler(w http.ResponseWriter, r *http.Request) {
 			} else {
 				message := Message{Word: id}
 				lastMessage = message
+				fmt.Println("New message: ", lastMessage)
 			}
 		} else {
 			http.Error(w, "No WORD field", http.StatusBadRequest)
